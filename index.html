@@ -179,7 +179,7 @@ function showSavedResults(){
  '<p><button onclick="document.getElementById(\'savedResultsPanel\')?.remove()">閉じる</button></p>';
  document.getElementById('savedResultsPanel')?.remove();
  const trigger=[...$('app').querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='showSavedResults()');
- if(trigger){trigger.closest('p').insertAdjacentElement('afterend',hostPanel)}
+ if(trigger){(trigger.closest('p')||trigger.closest('section')||trigger.parentElement).insertAdjacentElement('afterend',hostPanel)}
  else{$('app').append(hostPanel)}
  hostPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
