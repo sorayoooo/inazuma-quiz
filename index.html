@@ -177,7 +177,11 @@ function showSavedResults(){
  hostPanel.innerHTML='<h2>📊 保存したゲーム結果</h2><p class="muted">このブラウザに最大90日間保存します。ブラウザのデータを削除すると結果も消えます。</p>'+
  (items.length?items.map(x=>'<div class="qrow"><strong>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</strong><div>チーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回 ・ 参加者 '+x.players.length+'人</div><div class="smallnote">'+x.players.map(p=>esc(p.icon+' '+p.name+' '+p.correct+'/'+p.answered+'問')).join(' ／ ')+'</div></div>').join(''):'<p>まだ保存された結果はありません。</p>')+
  '<p><button onclick="document.getElementById(\'savedResultsPanel\')?.remove()">閉じる</button></p>';
- document.getElementById('savedResultsPanel')?.remove();$('app').prepend(hostPanel);
+ document.getElementById('savedResultsPanel')?.remove();
+ const trigger=[...$('app').querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='showSavedResults()');
+ if(trigger){trigger.closest('p').insertAdjacentElement('afterend',hostPanel)}
+ else{$('app').append(hostPanel)}
+ hostPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function endGame(){if(!isHost)return;try{
  const ref=db.ref('rooms/'+room);const snap=await ref.once('value');const d=snap.val();if(!d||d.status==='end')return;
