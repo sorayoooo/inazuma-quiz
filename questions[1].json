@@ -1,0 +1,77 @@
+[
+  {
+    "id": "q1",
+    "type": "choice",
+    "difficulty": "初級",
+    "question": "雷門中サッカー部のキャプテンは誰？",
+    "choices": [
+      "円堂守",
+      "豪炎寺修也",
+      "鬼道有人",
+      "風丸一郎太"
+    ],
+    "answers": [
+      "円堂守"
+    ],
+    "threshold": 60
+  },
+  {
+    "id": "q2",
+    "type": "choice",
+    "difficulty": "初級",
+    "question": "豪炎寺修也が得意とするポジションは？",
+    "choices": [
+      "GK",
+      "FW",
+      "DF",
+      "MF"
+    ],
+    "answers": [
+      "FW"
+    ],
+    "threshold": 60
+  },
+  {
+    "id": "q3",
+    "type": "choice",
+    "difficulty": "中級",
+    "question": "円堂守の代表的なキーパー技は？",
+    "choices": [
+      "ファイアトルネード",
+      "ゴッドハンド",
+      "イナズマブレイク",
+      "エターナルブリザード"
+    ],
+    "answers": [
+      "ゴッドハンド"
+    ],
+    "threshold": 70
+  },
+  {
+    "id": "q4",
+    "type": "text",
+    "difficulty": "中級",
+    "question": "「エターナルブリザード」を使う選手の名前は？（フルネーム）",
+    "choices": [],
+    "answers": [
+      "吹雪士郎"
+    ],
+    "threshold": 70
+  },
+  {
+    "id": "q5",
+    "type": "choice",
+    "difficulty": "上級",
+    "question": "鬼道有人が主に務めるポジションは？",
+    "choices": [
+      "GK",
+      "DF",
+      "MF",
+      "FW"
+    ],
+    "answers": [
+      "MF"
+    ],
+    "threshold": 75
+  }
+]
