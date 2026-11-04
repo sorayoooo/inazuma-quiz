@@ -124,7 +124,7 @@ if(isHost)html+=joinManagement(d);
  if(phase==='question'&&q){const timeLeft=d.deadline?Math.max(0,Math.ceil((d.deadline-(Date.now()+serverOffset))/1000)):null;html+=`<section class="panel"><div class="row spread"><span class="pill">第${(d.questionIndex||0)+1}問 / ${d.total||'?'}問${d.settings?.mode==='retry'?'（成功まで再挑戦）':''}</span><span class="pill">${esc(q.difficulty)}・成功ライン ${q.threshold}%</span><span id="timeLeft" class="timer">${timeLeft===null?'∞':timeLeft+'秒'}</span></div><h2 class="center" style="margin:35px 0">${esc(q.question)}</h2>${me?`<p class="notice">✅ 回答を送信しました。ホストの判定を待ってね。</p>`:q.type==='choice'?`<div class="choices">${(q.choices||[]).map((x,i)=>`<button class="answer ${localAnswer===x?'selected':''}" onclick="selectChoice(${i})">${"ABCD"[i]}. ${esc(x)}</button>`).join('')}</div>`:`<label>答えを入力<input id="freeAnswer" maxlength="100" placeholder="答えを入力" value="${esc(localAnswer)}" oninput="localAnswer=this.value"></label>`}${!me?`<p><button class="gold" onclick="submitAnswer()">⚡ 回答を確定</button></p>`:''}<div class="divider"></div><p class="muted">回答済み ${ansCount} / ${players.length}人　${ansCount>=players.length?"⚡ 全員回答！結果を集計しています…":"全員回答すると自動で結果を表示します"}</p>${isHost?`<button onclick="finishRound()">回答を締め切って判定</button>`:''}</section>`}
 if(phase==='result'){const r=d.result||{};html+=`<section class="panel center"><div class="big">${r.success?'TEAM CLEAR!':'TEAM FAILED'}</div><h2>正解 ${r.correct||0} / ${r.total||0}人（必要 ${r.required||0}人）</h2>${!(d.settings?.mode==='retry'&&!r.success)?`<p>正解：<strong>${esc(r.correctAnswers||'')}</strong></p>`:'<p class="notice">リトライ中は正解を非表示にしています。</p>'}<p>問題：${esc(d.currentQuestion?.question||'')}</p>${d.settings?.mode==='retry'&&!r.success?'<p class="notice">🔁 この問題は成功するまで次へ進めません。正解は再挑戦後に確認できます。</p>':d.settings?.mode==='survival'&&!r.success?'<p class="notice">🔥 サバイバル終了！ ここまでの記録を確認しよう。</p>':d.settings?.mode==='survival'?'<p class="notice">🔥 生存中！ 次の問題に挑戦しよう。</p>':''}${isHost?`<div class="row" style="justify-content:center">${d.settings?.mode==='retry'&&!r.success?'<button class="gold" onclick="retryRound()">🔁 同じ問題に再挑戦</button>':d.settings?.mode==='survival'&&!r.success?'<button class="gold" onclick="endGame()">結果へ</button>':'<button class="gold" onclick="nextQuestion()">次の問題へ</button>'}</div>`:'<p>ホストの操作を待っています。</p>'}</section>`}
 if((phase==='result'||phase==='end')&&players.length){const board=players.map(([id,p])=>({id,name:p.name||'ゲスト',icon:p.icon||'⚽',correct:d.scores?.[id]?.correct||0,answered:d.scores?.[id]?.answered||0})).sort((a,b)=>b.correct-a.correct||(b.answered?b.correct/b.answered:0)-(a.answered?a.correct/a.answered:0)||a.name.localeCompare(b.name,'ja'));html+=`<section class="panel"><h2>🏆 個人ランキング</h2><p class="muted">正解数の多い順・同数なら正答率順。未回答は正答率の分母に含めません。リトライ時は再挑戦も1回として集計します。</p><div class="players">${board.map((p,i)=>`<div class="player"><strong>${i+1}位 ${esc(p.icon)} ${esc(p.name)}</strong>${p.id===uid?'（あなた）':''}<div>正解 ${p.correct}問 / 回答 ${p.answered}問</div><div>正答率 ${p.answered?Math.round(p.correct/p.answered*100):0}%</div></div>`).join('')}</div><p class="notice">⚽ チーム成績：${d.wins||0}回成功 / ${d.attempts||0}回挑戦（成功率 ${d.attempts?Math.round((d.wins||0)/d.attempts*100):0}%）</p></section>`;}
-if(phase==='end'){html+=`<section class="panel center"><div class="big">🏆 ゲーム終了</div><p>${esc(MODE_LABEL[d.settings?.mode]||MODE_LABEL.record)}</p><h2>成功 ${d.wins||0} 問 / 挑戦 ${d.attempts||0} 回</h2>${isHost?'<button class="gold" onclick="backLobby()">ロビーに戻る</button> <button onclick="showSavedResults()">📊 保存結果を見る</button>':'<p>ホストがロビーに戻すのを待ってね。</p>'}</section>`}
+if(phase==='end'){html+=`<section class="panel center"><div class="big">🏆 ゲーム終了</div><p>${esc(MODE_LABEL[d.settings?.mode]||MODE_LABEL.record)}</p><h2>成功 ${d.wins||0} 問 / 挑戦 ${d.attempts||0} 回</h2>${isHost?'<button class="gold" onclick="backLobby()">ロビーに戻る</button> <button onclick="showSavedResults()">📊 保存結果を見る</button> <button class="gold" onclick="postCurrentResultX()">𝕏 Xに投稿</button>':'<p>ホストがロビーに戻すのを待ってね。</p>'}</section>`}
 html+=`<section class="panel"><div class="row spread"><h2>参加者一覧</h2><span class="pill">${players.length} / 50人</span></div><div class="players">${players.map(([id,p])=>`<div class="player">${esc(p.icon||'⚽')} ${esc(p.name||'ゲスト')} ${id===d.hostUid?'👑':''} ${id===uid?'（あなた）':''} ${d.answers?.[id]?'✅':''} ${isHost&&id!==uid?`<button class="danger" onclick="banPlayer('${esc(id)}')">BAN</button>`:''}</div>`).join('')}</div></section><section class="panel"><div class="row">${isHost?'<button class="danger" onclick="closeRoom()">部屋を終了</button>':''}<button onclick="leaveRoom()">退出</button></div><p class="smallnote">テスト版：判定はホスト端末で実行します。公開HTMLにテスト問題と正解が含まれます。リアクションは同じ部屋の全員に共有されます。</p></section>`;
 const focused=document.activeElement?.id==='freeAnswer',caret=focused?document.activeElement.selectionStart:null;if(focused)localAnswer=document.activeElement.value;$('app').innerHTML=html;if(focused&&$('freeAnswer')){$('freeAnswer').focus();$('freeAnswer').setSelectionRange(caret,caret)}
 }
@@ -175,7 +175,7 @@ function showSavedResults(){
  if(!isHost)return toast('保存結果はホスト端末で確認できます');
  const items=getSavedResults();const hostPanel=document.createElement('section');hostPanel.className='panel';hostPanel.id='savedResultsPanel';
  hostPanel.innerHTML='<h2>📊 保存したゲーム結果</h2><p class="muted">このブラウザに最大90日間保存します。ブラウザのデータを削除すると結果も消えます。</p>'+
- (items.length?items.map(x=>'<div class="qrow"><strong>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</strong><div>チーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回 ・ 参加者 '+x.players.length+'人</div><div class="smallnote">'+x.players.map(p=>esc(p.icon+' '+p.name+' '+p.correct+'/'+p.answered+'問')).join(' ／ ')+'</div><div class="row" style="margin-top:9px"><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'xlsx\')">📗 Excel</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'csv\')">📄 CSV</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'pdf\')">📕 PDF</button></div></div>').join(''):'<p>まだ保存された結果はありません。</p>')+
+ (items.length?items.map(x=>'<div class="qrow"><strong>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</strong><div>チーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回 ・ 参加者 '+x.players.length+'人</div><div class="smallnote">'+x.players.map(p=>esc(p.icon+' '+p.name+' '+p.correct+'/'+p.answered+'問')).join(' ／ ')+'</div><div class="row" style="margin-top:9px"><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'xlsx\')">📗 Excel</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'csv\')">📄 CSV</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'pdf\')">📕 PDF</button> <button onclick="shareSavedResult(\''+esc(x.id)+'\')">🔗 URLをコピー</button></div></div>').join(''):'<p>まだ保存された結果はありません。</p>')+
  '<p><button onclick="document.getElementById(\'savedResultsPanel\')?.remove()">閉じる</button></p>';
  document.getElementById('savedResultsPanel')?.remove();
  const trigger=[...$('app').querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='showSavedResults()');
@@ -217,6 +217,52 @@ async function exportSavedResult(id,format){
    printable.document.open();printable.document.write(doc);printable.document.close();printable.focus();return;
   }
  }catch(e){error(e)}
+}
+
+
+// v1.1: 明示的に共有した結果だけをFirebaseへ公開する。
+function shareLink(id){return location.origin+location.pathname+'?result='+encodeURIComponent(id)}
+async function publishSavedResult(x){
+ if(!isHost||!uid)throw Error('ホストとして部屋に参加している必要があります');
+ if(x.room!==room)throw Error('この結果を共有するには、記録した部屋にホストとして参加してください。部屋を終了している場合は共有できません');
+ const id='r'+x.savedAt.toString(36)+'_'+uid.slice(0,8)+'_'+Math.random().toString(36).slice(2,12);
+ const data={room:x.room,hostUid:uid,savedAt:x.savedAt,mode:x.mode,wins:x.wins,attempts:x.attempts,players:x.players.map(p=>({name:String(p.name).slice(0,12),icon:String(p.icon).slice(0,8),correct:p.correct||0,answered:p.answered||0}))};
+ await db.ref('sharedResults/'+id).set(data);
+ return shareLink(id);
+}
+async function ensureShareUrl(x){
+ if(x.shareUrl)return x.shareUrl;
+ const url=await publishSavedResult(x);
+ const items=getSavedResults(),target=items.find(v=>v.id===x.id);
+ if(target){target.shareUrl=url;localStorage.setItem(RESULT_STORAGE_KEY,JSON.stringify(items))}
+ return url;
+}
+async function shareSavedResult(id){
+ const x=getSavedResults().find(v=>v.id===id);if(!x)return toast('保存結果が見つかりません');
+ try{const url=await ensureShareUrl(x);try{await navigator.clipboard.writeText(url);toast('🔗 結果URLをコピーしました')}catch(e){prompt('このURLをコピーしてください',url)}}catch(e){error(e)}
+}
+function postCurrentResultX(){
+ const x=getSavedResults().find(v=>v.room===room);
+ if(!x)return toast('結果を保存中です。少し待ってからもう一度押してください');
+ return postSavedResultX(x.id);
+}
+async function postSavedResultX(id){
+ const x=getSavedResults().find(v=>v.id===id);if(!x)return toast('保存結果が見つかりません');
+ // Open immediately to avoid popup blockers, then navigate after Firebase write.
+ const tab=window.open('about:blank','_blank');
+ try{const url=await ensureShareUrl(x);const msg='⚡ イナイレ協力クイズの結果！\n🏆 '+(MODE_LABEL[x.mode]||x.mode)+'\nチーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回\n参加者 '+x.players.length+'人\n#イナイレ協力クイズ';const intent='https://twitter.com/intent/tweet?'+new URLSearchParams({text:msg,url}).toString();if(tab)tab.location.href=intent;else location.href=intent}catch(e){if(tab)tab.close();error(e)}
+}
+async function showPublicResult(id){
+ stopJoinWatch();room='';roomData=null;isHost=false;$('roomBadge').textContent='共有結果';$('reactbar').classList.add('hidden');
+ if(!/^r[a-z0-9_]{12,80}$/i.test(id)){$('app').innerHTML='<section class="panel">無効な共有URLです。</section>';return}
+ $('app').innerHTML='<section class="panel"><h2>🔗 共有されたゲーム結果</h2><p>読み込み中…</p></section>';
+ try{
+  const snap=await db.ref('sharedResults/'+id).once('value');if(!snap.exists())throw Error('結果が見つかりません。URLを確認してください');
+  const x=snap.val();if(Date.now()-x.savedAt>RESULT_KEEP_MS)throw Error('共有結果の公開期間（90日間）が終了しました');
+  const players=Array.isArray(x.players)?x.players:[];const rate=(a,b)=>b?Math.round(a/b*100):0;
+  const ranking=[...players].sort((a,b)=>(b.correct||0)-(a.correct||0)||rate(b.correct,b.answered)-rate(a.correct,a.answered));
+  $('app').innerHTML='<section class="panel"><h2>⚡ イナイレ協力クイズ｜共有結果</h2><p>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</p><div class="big">🏆 '+esc(x.wins)+' / '+esc(x.attempts)+'</div><p class="center">チーム成功数 / 挑戦回数（成功率 '+rate(x.wins,x.attempts)+'%）</p><h3>個人ランキング</h3><div class="players">'+ranking.map((p,i)=>'<div class="player"><strong>'+(i+1)+'位 '+esc(p.icon||'⚽')+' '+esc(p.name||'ゲスト')+'</strong><div>正解 '+(p.correct||0)+'問 / 回答 '+(p.answered||0)+'問</div><div>正答率 '+rate(p.correct,p.answered)+'%</div></div>').join('')+'</div><p><button onclick="location.href=location.pathname">🏟️ クイズのトップへ</button></p></section>';
+ }catch(e){$('app').innerHTML='<section class="panel"><h2>結果を表示できません</h2><p>'+esc(e.message||e)+'</p><p><button onclick="location.href=location.pathname">トップへ</button></p></section>'}
 }
 
 async function endGame(){if(!isHost)return;try{
@@ -303,5 +349,5 @@ async function reaction(emoji){
 }
 
 setInterval(()=>{if(!roomData||roomData.status!=='question')return;const t=roomData.deadline?Math.max(0,Math.ceil((roomData.deadline-Date.now()-serverOffset)/1000)):null;if($('timeLeft'))$('timeLeft').textContent=t===null?'∞':t+'秒';if(t===0&&isHost&&!processing)finishRound()},500);
-auth.onAuthStateChanged(async u=>{if(!u){try{await auth.signInAnonymously()}catch(e){$('status').textContent='接続失敗';error(e)}return}uid=u.uid;$('status').textContent='🟢 接続済み';home()},e=>{$('status').textContent='接続失敗';error(e)});
+auth.onAuthStateChanged(async u=>{if(!u){try{await auth.signInAnonymously()}catch(e){$('status').textContent='接続失敗';error(e)}return}uid=u.uid;$('status').textContent='🟢 接続済み';const resultId=new URLSearchParams(location.search).get('result');if(resultId){showPublicResult(resultId)}else{home()}},e=>{$('status').textContent='接続失敗';error(e)});
 </script></body></html>
