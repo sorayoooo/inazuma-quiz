@@ -133,7 +133,7 @@ if(phase==='question'&&q){const timeLeft=d.deadline?Math.max(0,Math.ceil((d.dead
 if(phase==='result'){const r=d.result||{};html+=`<section class="panel center"><div class="big">${r.success?'TEAM CLEAR!':'TEAM FAILED'}</div><h2>正解 ${r.correct||0} / ${r.total||0}人（必要 ${r.required||0}人）</h2>${!(d.settings?.mode==='retry'&&!r.success)?`<p>正解：<strong>${esc(r.correctAnswers||'')}</strong></p>`:'<p class="notice">リトライ中は正解を非表示にしています。</p>'}<p>問題：${esc(d.currentQuestion?.question||'')}</p>${d.settings?.mode==='retry'&&!r.success?'<p class="notice">🔁 この問題は成功するまで次へ進めません。正解は再挑戦後に確認できます。</p>':d.settings?.mode==='survival'&&!r.success?'<p class="notice">🔥 サバイバル終了！ ここまでの記録を確認しよう。</p>':d.settings?.mode==='survival'?'<p class="notice">🔥 生存中！ 次の問題に挑戦しよう。</p>':''}${isHost?`<div class="row" style="justify-content:center">${d.settings?.mode==='retry'&&!r.success?'<button class="gold" onclick="retryRound()">🔁 同じ問題に再挑戦</button>':d.settings?.mode==='survival'&&!r.success?'<button class="gold" onclick="endGame()">結果へ</button>':'<button class="gold" onclick="nextQuestion()">次の問題へ</button>'}</div>`:'<p>ホストの操作を待っています。</p>'}</section>`}
 if(phase==='result'&&players.length){html+=rankingHtml(d,true)}
 if(phase==='end'){
- html+=`<section class="panel center"><div class="big">🏆 ゲーム終了</div><p>${esc(MODE_LABEL[d.settings?.mode]||MODE_LABEL.record)}</p><h2>成功 ${d.wins||0} 問 / 挑戦 ${d.attempts||0} 回</h2><p class="notice">⚽ チーム成功率 ${d.attempts?Math.round((d.wins||0)/d.attempts*100):0}%</p><div class="divider"></div>${rankingHtml(d,false)}<div class="row" style="justify-content:center;margin-top:22px"><button onclick="copyEndResultUrl()">🔗 結果URLをコピー</button><button class="gold" onclick="postEndResultX()">𝕏 Xに投稿</button><button onclick="saveEndResultImage()">🖼️ 結果画像を保存</button></div>${isHost?'<div class="row" style="justify-content:center;margin-top:14px"><button class="gold" onclick="backLobby()">ロビーに戻る</button><button onclick="showSavedResults()">📊 保存結果を見る</button></div>':'<p class="muted">ホストがロビーに戻すのを待ってね。</p>'}</section>`;
+ html+=`<section class="panel center"><div class="big">🏆 ゲーム終了</div><p>${esc(MODE_LABEL[d.settings?.mode]||MODE_LABEL.record)}</p><h2>成功 ${d.wins||0} 問 / 挑戦 ${d.attempts||0} 回</h2><p class="notice">⚽ チーム成功率 ${d.attempts?Math.round((d.wins||0)/d.attempts*100):0}%</p><div class="divider"></div>${rankingHtml(d,false)}<div class="row" style="justify-content:center;margin-top:22px"><button onclick="copyEndResultUrl()">🔗 結果URLをコピー</button><button class="gold" onclick="postEndResultX()">𝕏 Xに投稿</button><button onclick="saveEndResultImage()">🖼️ 結果画像を見る・保存</button></div>${isHost?'<div class="row" style="justify-content:center;margin-top:14px"><button class="gold" onclick="backLobby()">ロビーに戻る</button><button onclick="showSavedResults()">📊 保存結果を見る</button></div>':'<p class="muted">ホストがロビーに戻すのを待ってね。</p>'}</section>`;
 }
 html+=`<section class="panel"><div class="row spread"><h2>参加者一覧</h2><span class="pill">${players.length} / 50人</span></div><div class="players">${players.map(([id,p])=>`<div class="player">${esc(p.icon||'⚽')} ${esc(p.name||'ゲスト')} ${id===d.hostUid?'👑':''} ${id===uid?'（あなた）':''} ${d.answers?.[id]?'✅':''} ${isHost&&id!==uid?`<button class="danger" onclick="banPlayer('${esc(id)}')">BAN</button>`:''}</div>`).join('')}</div></section><section class="panel"><div class="row">${isHost?'<button class="danger" onclick="closeRoom()">部屋を終了</button>':''}<button onclick="leaveRoom()">退出</button></div><p class="smallnote">テスト版：判定はホスト端末で実行します。公開HTMLにテスト問題と正解が含まれます。リアクションは同じ部屋の全員に共有されます。</p></section>`;
 const focused=document.activeElement?.id==='freeAnswer',caret=focused?document.activeElement.selectionStart:null;if(focused)localAnswer=document.activeElement.value;$('app').innerHTML=html;if(focused&&$('freeAnswer')){$('freeAnswer').focus();$('freeAnswer').setSelectionRange(caret,caret)}
@@ -297,7 +297,27 @@ function makeResultImage(x){return new Promise((resolve,reject)=>{
  canvas.toBlob(blob=>blob?resolve(blob):reject(Error('画像を作成できません')),'image/png');
  }catch(e){reject(e)}
 })}
-async function saveEndResultImage(){try{const x=endResultData(),blob=await makeResultImage(x);downloadBlob(blob,'inazuma_result.png');toast('🖼️ 結果画像を保存しました。X投稿時に添付してね')}catch(e){error(e)}}
+let previewBlobUrl=null;
+function closeResultPreview(){
+ const el=document.getElementById('resultImagePreview');if(el)el.remove();
+ if(previewBlobUrl){URL.revokeObjectURL(previewBlobUrl);previewBlobUrl=null}
+ document.body.style.overflow='';
+}
+async function saveEndResultImage(){
+ try{
+  const x=endResultData(),blob=await makeResultImage(x);
+  closeResultPreview();previewBlobUrl=URL.createObjectURL(blob);
+  const layer=document.createElement('div');layer.id='resultImagePreview';
+  layer.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(4,13,30,.96);overflow-y:auto;padding:14px;box-sizing:border-box;text-align:center';
+  const bar=document.createElement('div');bar.style.cssText='display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;position:sticky;top:0;background:#071831;padding:10px;border-radius:12px;z-index:1';
+  const close=document.createElement('button');close.textContent='← ゲーム画面に戻る';close.onclick=closeResultPreview;
+  const save=document.createElement('button');save.textContent='⬇ 画像を保存';save.onclick=()=>downloadBlob(blob,'inazuma_result.png');
+  bar.append(close,save);
+  const note=document.createElement('p');note.textContent='スマホでは画像を長押しして保存することもできます。戻るときは上のボタンを押してね。';note.style.cssText='color:#fff;font-size:14px';
+  const img=document.createElement('img');img.src=previewBlobUrl;img.alt='ゲーム結果と個人ランキング';img.style.cssText='display:block;width:100%;max-width:640px;height:auto;margin:12px auto 28px;border-radius:12px';
+  layer.append(bar,note,img);document.body.append(layer);document.body.style.overflow='hidden';
+ }catch(e){error(e)}
+}
 
 async function showPublicResult(id){
  stopJoinWatch();room='';roomData=null;isHost=false;$('roomBadge').textContent='共有結果';$('reactbar').classList.add('hidden');
@@ -320,7 +340,7 @@ async function endGame(){if(!isHost)return;try{
 async function backLobby(){if(!isHost)return;try{await db.ref('rooms/'+room).update({status:'lobby',answers:null,result:null,currentQuestion:null,deadline:null,scores:null,wins:0,attempts:0,sharedResultId:null})}catch(e){error(e)}}
 async function copyLink(){const u=location.origin+location.pathname+'?room='+encodeURIComponent(room);try{await navigator.clipboard.writeText(u);toast('参加URLをコピーしました')}catch(e){prompt('URLをコピー',u)}}
 async function copyCode(){try{await navigator.clipboard.writeText(room);toast('部屋番号をコピーしました')}catch(e){prompt('部屋番号をコピー',room)}}
-function leaveLocal(){stopJoinWatch();detachReactions();clearTimeout(autoCloseTimer);autoCloseTimer=null;if(room&&roomListener)db.ref('rooms/'+room).off('value',roomListener);roomListener=null;history.replaceState(null,'',location.pathname);home()}
+function leaveLocal(){closeResultPreview();stopJoinWatch();detachReactions();clearTimeout(autoCloseTimer);autoCloseTimer=null;if(room&&roomListener)db.ref('rooms/'+room).off('value',roomListener);roomListener=null;history.replaceState(null,'',location.pathname);home()}
 async function leaveRoom(){if(!room)return;try{if(isHost)return toast('ホストは「部屋を終了」を使ってね');await db.ref('rooms/'+room+'/players/'+uid).remove();leaveLocal()}catch(e){error(e)}}
 async function closeRoom(){if(!isHost||!confirm('部屋を終了しますか？'))return;try{await db.ref('rooms/'+room).remove();leaveLocal()}catch(e){error(e)}}
 
@@ -415,5 +435,14 @@ setInterval(async ()=>{
  if($('timeLeft'))$('timeLeft').textContent=t===null?'∞':t+'秒';
  if(t===0&&isHost&&!processing)finishRound();
 },250);
-auth.onAuthStateChanged(async u=>{if(!u){try{await auth.signInAnonymously()}catch(e){$('status').textContent='接続失敗';error(e)}return}uid=u.uid;$('status').textContent='🟢 接続済み';const resultId=new URLSearchParams(location.search).get('result');if(resultId){showPublicResult(resultId)}else{home()}},e=>{$('status').textContent='接続失敗';error(e)});
+async function restoreRoomOnLoad(){
+ const id=(new URLSearchParams(location.search).get('room')||'').toUpperCase();
+ if(!/^[A-Z2-9]{6}$/.test(id)){home();return}
+ try{
+  const snap=await db.ref('rooms/'+id).once('value'),d=snap.val();
+  if(d&&d.players?.[uid]&&!d.bans?.[uid]){profile={name:d.players[uid].name||'',icon:d.players[uid].icon||'⚽'};enter(id);return}
+ }catch(e){console.warn('部屋の復帰に失敗',e)}
+ home();
+}
+auth.onAuthStateChanged(async u=>{if(!u){try{await auth.signInAnonymously()}catch(e){$('status').textContent='接続失敗';error(e)}return}uid=u.uid;$('status').textContent='🟢 接続済み';const resultId=new URLSearchParams(location.search).get('result');if(resultId){showPublicResult(resultId)}else{restoreRoomOnLoad()}},e=>{$('status').textContent='接続失敗';error(e)});
 </script></body></html>
