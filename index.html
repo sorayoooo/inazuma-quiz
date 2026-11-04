@@ -97,7 +97,7 @@ async function approveJoin(id){
   if(!result.committed)toast('承認できませんでした（満員・重複名・申請状態を確認）');
  }catch(e){error(e)}finally{joinBusy=false}
 }
-async function rejectJoin(id){if(!isHost||!confirm('この参加申請を拒否しますか？'))return;try{await db.ref('rooms/'+room+'/requests/'+id+'/status').set('rejected')}catch(e){error(e)}}
+async function rejectJoin(id){if(!isHost||!confirm('この参加申請を拒否しますか？'))return;try{await db.ref('rooms/'+room+'/requests/'+id).remove()}catch(e){error(e)}}
 async function banPlayer(id){
  if(!isHost||id===uid)return;
  const d=roomData,p=d.players?.[id]||d.requests?.[id];if(!p)return;
