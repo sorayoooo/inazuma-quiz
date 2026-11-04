@@ -4,7 +4,7 @@
 #status{font-size:13px;color:#c6ddf6}#app{min-height:300px}.players{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.player{background:#1a416f;padding:13px;border-radius:12px}.copy{overflow-wrap:anywhere;color:#ffdd65}.notice{line-height:1.65}
 .setting{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.answer-status{padding:10px;border-radius:10px;background:#163e6a}.bigquestion{font-size:clamp(21px,4vw,32px);font-weight:800}.smallnote{color:#b8d1ed;font-size:12px}.divider{height:1px;background:#365d88;margin:18px 0}#app{padding-bottom:20px}</style><style>
 #overlay{position:fixed;inset:0;background:#061126ed;display:none;z-index:40;align-items:center;justify-content:center;padding:20px}#overlay>div{max-width:600px;width:100%;border:2px solid #e5b63d;background:radial-gradient(circle,#295894,#10264a);padding:30px;border-radius:25px;text-align:center;box-shadow:0 0 100px #ffcc3970}.lightning{font-size:80px;animation:pulse .7s infinite alternate}@keyframes pulse{to{transform:scale(1.25);filter:drop-shadow(0 0 25px gold)}}.confirm-backdrop{position:fixed;inset:0;z-index:55;background:#051021e8;display:flex;align-items:center;justify-content:center;padding:18px}.confirm-panel{background:#15365f;border:2px solid #f4c94c;border-radius:20px;padding:24px;max-width:420px;width:100%;text-align:center}.confirm-panel p{overflow-wrap:anywhere}.reactbar{position:fixed;bottom:0;left:0;right:0;background:#081a33ed;border-top:1px solid #4a77a4;padding:10px;z-index:20;display:flex;justify-content:center;gap:8px}.reactbar button{font-size:24px;padding:7px 13px}.float-layer{position:fixed;inset:0;pointer-events:none;z-index:25;overflow:hidden}.float{position:absolute;bottom:85px;left:var(--x);display:grid;text-align:center;font-size:31px;animation:fly 3s ease-out forwards;text-shadow:0 2px 6px #000}.float small{font-size:11px;color:#fff}@keyframes fly{to{transform:translateY(-200px);opacity:0}}@media(max-width:620px){.reactbar button{padding:8px}}
-</style></head><body><div id="toast"></div><div id="overlay"><div><div class="lightning">⚡</div><div id="overlayText" class="big">TEAM CLEAR!</div><p id="overlaySub"></p><button onclick="skipAnimation()">スキップ</button></div></div><div id="answerDialog" class="confirm-backdrop hidden"><div class="confirm-panel"><h2>⚡ 回答を確定する？</h2><p id="answerPreview"></p><p class="muted">確定後は変更できません。</p><div class="row" style="justify-content:center"><button onclick="cancelAnswerConfirm()">戻る</button><button class="gold" onclick="submitAnswerConfirmed()">確定する</button></div></div></div><div class="float-layer" id="floats"></div><div class="reactbar hidden" id="reactbar"><button onclick="reaction('⚡')">⚡</button><button onclick="reaction('🔥')">🔥</button><button onclick="reaction('👏')">👏</button><button onclick="reaction('😱')">😱</button><button onclick="reaction('💪')">💪</button></div><main class="wrap"><header><div><h1>⚡ イナイレ協力クイズ</h1><div class="sub">オンライン統合版 v1.0（結果保存テスト）</div></div><div class="row"><span id="status">Firebase接続中…</span><span id="roomBadge" class="pill">未参加</span><button class="ghost" id="muteBtn" onclick="toggleMute()">🔊 音 ON</button></div></header><div id="app"></div></main><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script><script>
+</style></head><body><div id="toast"></div><div id="overlay"><div><div class="lightning">⚡</div><div id="overlayText" class="big">TEAM CLEAR!</div><p id="overlaySub"></p><button onclick="skipAnimation()">スキップ</button></div></div><div id="answerDialog" class="confirm-backdrop hidden"><div class="confirm-panel"><h2>⚡ 回答を確定する？</h2><p id="answerPreview"></p><p class="muted">確定後は変更できません。</p><div class="row" style="justify-content:center"><button onclick="cancelAnswerConfirm()">戻る</button><button class="gold" onclick="submitAnswerConfirmed()">確定する</button></div></div></div><div class="float-layer" id="floats"></div><div class="reactbar hidden" id="reactbar"><button onclick="reaction('⚡')">⚡</button><button onclick="reaction('🔥')">🔥</button><button onclick="reaction('👏')">👏</button><button onclick="reaction('😱')">😱</button><button onclick="reaction('💪')">💪</button></div><main class="wrap"><header><div><h1>⚡ イナイレ協力クイズ</h1><div class="sub">オンライン統合版 v1.0（結果保存テスト）</div></div><div class="row"><span id="status">Firebase接続中…</span><span id="roomBadge" class="pill">未参加</span><button class="ghost" id="muteBtn" onclick="toggleMute()">🔊 音 ON</button></div></header><div id="app"></div></main><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script><script>
 'use strict';
 const firebaseConfig={apiKey:"AIzaSyDi8Fq5aBBGTxqnfXeJ0C47iZagOXVNteY",authDomain:"inazuma-quiz.firebaseapp.com",databaseURL:"https://inazuma-quiz-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"inazuma-quiz",storageBucket:"inazuma-quiz.firebasestorage.app",messagingSenderId:"1015045226414",appId:"1:1015045226414:web:b9ca7af847e5d7d908d23f",measurementId:"G-SCMVW4HBWD"};
 const SAMPLE=[{id:'q1',type:'choice',difficulty:'初級',question:'雷門中サッカー部のキャプテンは誰？',choices:['円堂守','豪炎寺修也','鬼道有人','風丸一郎太'],answers:['円堂守'],threshold:60},{id:'q2',type:'choice',difficulty:'初級',question:'豪炎寺修也が得意とするポジションは？',choices:['GK','FW','DF','MF'],answers:['FW'],threshold:60},{id:'q3',type:'choice',difficulty:'中級',question:'円堂守の代表的なキーパー技は？',choices:['ファイアトルネード','ゴッドハンド','イナズマブレイク','エターナルブリザード'],answers:['ゴッドハンド'],threshold:70},{id:'q4',type:'text',difficulty:'中級',question:'「エターナルブリザード」を使う選手の名前は？（フルネーム）',choices:[],answers:['吹雪士郎'],threshold:70},{id:'q5',type:'choice',difficulty:'上級',question:'鬼道有人が主に務めるポジションは？',choices:['GK','DF','MF','FW'],answers:['MF'],threshold:75}];
@@ -175,7 +175,7 @@ function showSavedResults(){
  if(!isHost)return toast('保存結果はホスト端末で確認できます');
  const items=getSavedResults();const hostPanel=document.createElement('section');hostPanel.className='panel';hostPanel.id='savedResultsPanel';
  hostPanel.innerHTML='<h2>📊 保存したゲーム結果</h2><p class="muted">このブラウザに最大90日間保存します。ブラウザのデータを削除すると結果も消えます。</p>'+
- (items.length?items.map(x=>'<div class="qrow"><strong>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</strong><div>チーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回 ・ 参加者 '+x.players.length+'人</div><div class="smallnote">'+x.players.map(p=>esc(p.icon+' '+p.name+' '+p.correct+'/'+p.answered+'問')).join(' ／ ')+'</div></div>').join(''):'<p>まだ保存された結果はありません。</p>')+
+ (items.length?items.map(x=>'<div class="qrow"><strong>'+esc(new Date(x.savedAt).toLocaleString('ja-JP'))+' ・ '+esc(MODE_LABEL[x.mode]||x.mode)+'</strong><div>チーム成功 '+x.wins+'回 / 挑戦 '+x.attempts+'回 ・ 参加者 '+x.players.length+'人</div><div class="smallnote">'+x.players.map(p=>esc(p.icon+' '+p.name+' '+p.correct+'/'+p.answered+'問')).join(' ／ ')+'</div><div class="row" style="margin-top:9px"><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'xlsx\')">📗 Excel</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'csv\')">📄 CSV</button><button onclick="exportSavedResult(\''+esc(x.id)+'\',\'pdf\')">📕 PDF</button></div></div>').join(''):'<p>まだ保存された結果はありません。</p>')+
  '<p><button onclick="document.getElementById(\'savedResultsPanel\')?.remove()">閉じる</button></p>';
  document.getElementById('savedResultsPanel')?.remove();
  const trigger=[...$('app').querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='showSavedResults()');
@@ -183,6 +183,39 @@ function showSavedResults(){
  else{$('app').append(hostPanel)}
  hostPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
+// v1.0 第2段階：保存結果を個別に出力する。
+function savedResultRows(x){
+ const rate=(a,b)=>b?Math.round(a/b*100)+'%':'0%';
+ const rows=[['保存日時',new Date(x.savedAt).toLocaleString('ja-JP')],['部屋番号',x.room],['モード',MODE_LABEL[x.mode]||x.mode],['チーム成功',x.wins],['挑戦回数',x.attempts],['チーム成功率',rate(x.wins,x.attempts)],[],['順位','アイコン','ニックネーム','正解数','回答数','正答率']];
+ const players=[...(x.players||[])].sort((a,b)=>(b.correct||0)-(a.correct||0)||((b.answered?b.correct/b.answered:0)-(a.answered?a.correct/a.answered:0)));
+ players.forEach((p,i)=>rows.push([i+1,p.icon||'⚽',p.name||'ゲスト',p.correct||0,p.answered||0,rate(p.correct||0,p.answered||0)]));
+ return rows;
+}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+function csvCell(v){const s=String(v??'');return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+async function exportSavedResult(id,format){
+ const x=getSavedResults().find(x=>x.id===id);if(!x)return toast('保存結果が見つかりません');
+ const rows=savedResultRows(x),name='inazuma_result_'+x.savedAt;
+ try{
+  if(format==='csv'){
+   const content='\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+   downloadBlob(new Blob([content],{type:'text/csv;charset=utf-8'}),name+'.csv');return;
+  }
+  if(format==='xlsx'){
+   if(typeof XLSX==='undefined')throw Error('Excel出力ライブラリを読み込めません。ネット接続を確認してください');
+   const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:19},{wch:22},{wch:20},{wch:14},{wch:14},{wch:16}];
+   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ゲーム結果');XLSX.writeFile(wb,name+'.xlsx');return;
+  }
+  if(format==='pdf'){
+   const printable=window.open('','_blank');if(!printable)throw Error('ポップアップがブロックされました。許可して再度試してください');
+   const cells=rows.map((r,i)=>r.length?'<tr>'+r.map(v=>(i===7?'th':'td')+'>'+esc(v)+'</'+(i===7?'th':'td')+'>').join('')+'</tr>':'<tr><td colspan="6">&nbsp;</td></tr>').join('');
+   printable.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>イナイレ協力クイズ 結果</title><style>body{font-family:system-ui,sans-serif;padding:25px;color:#172743}h1{font-size:22px}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #bbb;padding:8px;text-align:left}th{background:#eee}@media print{body{padding:0}}</style></head><body><h1>⚡ イナイレ協力クイズ ゲーム結果</h1><table>'+cells+'</table><p>印刷画面で「PDFに保存」を選んでください。</p></body></html>');
+   printable.document.close();printable.focus();setTimeout(()=>printable.print(),350);return;
+  }
+ }catch(e){error(e)}
+}
+
 async function endGame(){if(!isHost)return;try{
  const ref=db.ref('rooms/'+room);const snap=await ref.once('value');const d=snap.val();if(!d||d.status==='end')return;
  await ref.update({status:'end',answers:null,deadline:null});
