@@ -1,0 +1,73 @@
+[
+  {
+    "id": "q1",
+    "type": "choice",
+    "difficulty": "初級",
+    "question": "初代雷門中サッカー部のキャプテンは誰？",
+    "choices": [
+      "円堂守",
+      "豪炎寺修也",
+      "鬼道有人",
+      "風丸一郎太"
+    ],
+    "answers": [
+      "円堂守"
+    ],
+    "threshold": 90
+  },
+  {
+    "id": "q2",
+    "type": "choice",
+    "difficulty": "初級",
+    "question": "豪炎寺修也が得意とするポジションは？",
+    "choices": [
+      "GK",
+      "FW",
+      "DF",
+      "MF"
+    ],
+    "answers": [
+      "FW"
+    ],
+    "threshold": 60
+  },
+  {
+    "id": "q3",
+    "type": "text",
+    "difficulty": "中級",
+    "question": "豪炎寺修也の妹の名前は？（漢字のみ、名字はいらない）",
+    "choices": [],
+    "answers": [
+      "夕香"
+    ],
+    "threshold": 60
+  },
+  {
+    "id": "q4",
+    "type": "text",
+    "difficulty": "鬼",
+    "question": "尾刈斗中の監督の名前は？（フルネーム、漢字かひらがな）",
+    "choices": [],
+    "answers": [
+      "地木流灰人",
+      "じきるはいど"
+    ],
+    "threshold": 20
+  },
+  {
+    "id": "q5",
+    "type": "choice",
+    "difficulty": "上級",
+    "question": "鬼道有人が主に務めるポジションは？",
+    "choices": [
+      "GK",
+      "DF",
+      "MF",
+      "FW"
+    ],
+    "answers": [
+      "MF"
+    ],
+    "threshold": 75
+  }
+]
